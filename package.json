@@ -1,0 +1,77 @@
+{
+  "name": "ai-notetaker",
+  "version": "1.0.0",
+  "description": "AI-powered meeting notetaker with transcription and summarization",
+  "main": "dist/electron/main.js",
+  "scripts": {
+    "dev": "concurrently -k \"npm run dev:vite\" \"npm run dev:electron-wait\"",
+    "dev:vite": "vite",
+    "dev:electron-wait": "wait-on http://localhost:5173 && npm run dev:electron",
+    "dev:electron": "npm run build:electron && cross-env NODE_ENV=development electron .",
+    "build:electron": "tsc -p electron/tsconfig.json",
+    "build:vite": "vite build",
+    "build": "npm run build:electron && npm run build:vite",
+    "build:mac": "npm run build && electron-builder --mac",
+    "type-check": "tsc --noEmit",
+    "postinstall": "electron-builder install-app-deps && electron-rebuild -f -w better-sqlite3"
+  },
+  "keywords": [
+    "ai",
+    "notetaker",
+    "transcription",
+    "meeting"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "@electron/rebuild": "^3.7.2",
+    "@types/better-sqlite3": "^7.6.8",
+    "@types/node": "^20.10.0",
+    "@types/react": "^18.2.42",
+    "@types/react-dom": "^18.2.17",
+    "@typescript-eslint/eslint-plugin": "^6.13.1",
+    "@typescript-eslint/parser": "^6.13.1",
+    "@vitejs/plugin-react": "^4.2.1",
+    "autoprefixer": "^10.4.16",
+    "concurrently": "^8.2.2",
+    "cross-env": "^7.0.3",
+    "electron": "^28.0.0",
+    "electron-builder": "^24.9.1",
+    "eslint": "^8.55.0",
+    "postcss": "^8.4.32",
+    "tailwindcss": "^3.3.6",
+    "typescript": "^5.3.3",
+    "vite": "^5.0.7",
+    "vite-plugin-electron": "^0.28.1",
+    "wait-on": "^9.0.1"
+  },
+  "dependencies": {
+    "better-sqlite3": "^9.2.2",
+    "openai": "^4.20.1",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "zustand": "^4.4.7"
+  },
+  "build": {
+    "appId": "com.ai-notetaker.app",
+    "productName": "AI Notetaker",
+    "files": [
+      "dist/**/*",
+      "swift/**/*",
+      "package.json"
+    ],
+    "asarUnpack": [
+      "swift/**/*"
+    ],
+    "directories": {
+      "output": "release"
+    },
+    "mac": {
+      "category": "public.app-category.productivity",
+      "target": "dmg",
+      "hardenedRuntime": true,
+      "entitlements": "build/entitlements.mac.plist",
+      "entitlementsInherit": "build/entitlements.mac.plist"
+    }
+  }
+}
