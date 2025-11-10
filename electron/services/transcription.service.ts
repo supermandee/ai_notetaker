@@ -4,6 +4,7 @@ import path from 'path';
 import { exec } from 'child_process';
 import { promisify } from 'util';
 import { ConfigService } from './config.service';
+import { getFfmpegPath, getFfprobePath } from '../utils/ffmpeg-path';
 
 const execPromise = promisify(exec);
 
@@ -44,7 +45,8 @@ export class TranscriptionService {
     const fileBaseName = path.basename(audioFilePath, fileExt);
 
     // Get total duration of the audio file
-    const totalDurationCmd = `ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 "${audioFilePath}"`;
+    const ffprobePath = getFfprobePath();
+    const totalDurationCmd = `"${ffprobePath}" -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 "${audioFilePath}"`;
     const { stdout: durationOutput } = await execPromise(totalDurationCmd);
     const totalDuration = parseFloat(durationOutput.trim());
 
@@ -62,7 +64,8 @@ export class TranscriptionService {
 
       // Re-encode audio to FLAC format with lower sample rate to reduce size
       // This ensures valid audio frames and smaller file sizes
-      const splitCmd = `ffmpeg -i "${audioFilePath}" -ss ${startTime} -t ${maxChunkDurationSeconds} -acodec flac -ar 16000 "${chunkPath}" -y`;
+      const ffmpegPath = getFfmpegPath();
+      const splitCmd = `"${ffmpegPath}" -i "${audioFilePath}" -ss ${startTime} -t ${maxChunkDurationSeconds} -acodec flac -ar 16000 "${chunkPath}" -y`;
       await execPromise(splitCmd);
 
       chunkPaths.push(chunkPath);
