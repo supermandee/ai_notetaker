@@ -7,17 +7,21 @@ A minimalistic macOS application for recording, transcribing, and summarizing me
 AI Notetaker is an Electron-based desktop application built with React and TypeScript that helps you capture, transcribe, and summarize your online meetings. The application uses OpenAI's Whisper for high-quality transcription and GPT-4 for intelligent summarization, all while keeping your data secure and stored locally on your machine.
 
 **Tech Stack:**
-- **Frontend**: React 18 with TypeScript, Zustand for state management, Tailwind CSS for styling
+- **Frontend**: React 18 with TypeScript, Zustand for state management, Tailwind CSS with Typography plugin for styling
 - **Backend**: Electron with Node.js
-- **AI Services**: OpenAI gpt-4o-transcribe (transcription), OpenAI GPT-4o (summarization)
+- **AI Services**: OpenAI Whisper models (transcription), OpenAI GPT models (summarization)
 - **Database**: SQLite for local data storage
 - **Build Tool**: Vite for fast development and building
+- **Markdown Rendering**: react-markdown for beautiful summary display
 
 ## Features
 
 - **Audio Recording**: Capture system audio from meetings on Teams, Zoom, Google Meet, and other platforms
-- **AI Transcription**: Convert audio to text using OpenAI Whisper (with support for more providers coming soon)
-- **AI Summarization**: Generate structured meeting summaries using GPT-4 (with support for Claude and Gemini coming soon)
+- **AI Transcription**: Convert audio to text using OpenAI Whisper models (gpt-4o-transcribe, gpt-4o-transcribe-diarize, gpt-4o-mini-transcribe, gpt-4o-mini-tts)
+- **AI Summarization**: Generate structured meeting summaries using GPT models (gpt-5, gpt-5-mini, gpt-4o, gpt-4o-mini)
+- **Model Selection**: Choose the best model for your needs and budget
+- **Large File Support**: Automatic chunking for audio files over 25MB
+- **Markdown Summaries**: Beautiful markdown-rendered summaries with custom typography
 - **Local Storage**: All recordings and data are stored locally on your machine
 - **Encrypted API Keys**: Your API keys are encrypted and stored securely
 - **Export**: Export meeting summaries and transcripts as Markdown or plain text
@@ -100,13 +104,18 @@ After building, you'll find:
 
 1. Launch the application
 2. Click the Settings icon (gear icon) in the top right
-3. Enter your API keys:
-   - **Transcription API Key**: Your OpenAI API key for Whisper
-   - **Summary API Key**: Your OpenAI API key for GPT-4 (can be the same key)
-4. Optionally customize the summary template
-5. Click "Save Settings"
+3. Configure your transcription service:
+   - **Provider**: OpenAI Whisper (more providers coming soon)
+   - **Model**: Choose from gpt-4o-transcribe (recommended), gpt-4o-transcribe-diarize, gpt-4o-mini-transcribe, or gpt-4o-mini-tts
+   - **API Key**: Your OpenAI API key
+4. Configure your summary service:
+   - **Provider**: OpenAI (more providers coming soon)
+   - **Model**: Choose from gpt-5 (recommended), gpt-5-mini, gpt-4o, or gpt-4o-mini
+   - **API Key**: Your OpenAI API key (can be the same key)
+5. Optionally customize the summary template
+6. Click "Save Settings"
 
-Your API keys are encrypted using AES-256 and stored locally. They are never sent to any server except the AI service you've configured.
+Your API keys are encrypted using AES-256-GCM and stored locally. They are never sent to any server except the AI service you've configured.
 
 ## Usage
 
@@ -174,6 +183,7 @@ These permissions can be managed in System Preferences > Security & Privacy > Pr
 - Verify your OpenAI API key is correct
 - Check that you have sufficient API credits
 - Ensure the audio file is in a supported format
+- For production builds, ensure ffmpeg and ffprobe are installed (Homebrew: `brew install ffmpeg`)
 
 ### Summary generation fails
 - Verify your OpenAI API key has access to GPT-4

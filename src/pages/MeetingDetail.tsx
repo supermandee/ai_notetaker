@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAppStore } from '../store/appStore';
 import { Meeting } from '../types';
+import ReactMarkdown from 'react-markdown';
 
 function MeetingDetail() {
   const { selectedMeetingId, setCurrentView, updateMeeting } = useAppStore();
@@ -312,10 +313,8 @@ function MeetingDetail() {
             {activeTab === 'summary' && (
               <div>
                 {meeting.summary ? (
-                  <div className="prose max-w-none">
-                    <pre className="whitespace-pre-wrap font-sans">
-                      {meeting.summary}
-                    </pre>
+                  <div className="prose prose-slate max-w-none">
+                    <ReactMarkdown>{meeting.summary}</ReactMarkdown>
                   </div>
                 ) : (
                   <div className="text-center py-12 text-gray-500">

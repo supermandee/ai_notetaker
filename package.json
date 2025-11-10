@@ -46,10 +46,12 @@
     "wait-on": "^9.0.1"
   },
   "dependencies": {
+    "@tailwindcss/typography": "^0.5.19",
     "better-sqlite3": "^9.2.2",
     "openai": "^4.20.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "react-markdown": "^10.1.0",
     "zustand": "^4.4.7"
   },
   "build": {

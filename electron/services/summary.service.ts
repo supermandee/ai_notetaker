@@ -39,22 +39,32 @@ export class SummaryService {
 
     console.log(`Using model for summary: ${model}`);
 
+    // GPT-5 models use max_completion_tokens and don't support custom temperature
+    const isGpt5Model = model.startsWith('gpt-5');
+    const completionParams: any = {
+      model: model,
+      messages: [
+        {
+          role: 'system',
+          content: `You are a professional meeting summarizer. Generate a concise, well-structured summary of the meeting transcript following this template:\n\n${template}\n\nExtract the key points, decisions, and action items accurately.`,
+        },
+        {
+          role: 'user',
+          content: `Please summarize the following meeting transcript:\n\n${transcript}`,
+        },
+      ],
+    };
+
+    if (isGpt5Model) {
+      completionParams.max_completion_tokens = 1500;
+      // GPT-5 models only support default temperature (1)
+    } else {
+      completionParams.max_tokens = 1500;
+      completionParams.temperature = 0.3;
+    }
+
     try {
-      const response = await openai.chat.completions.create({
-        model: model,
-        messages: [
-          {
-            role: 'system',
-            content: `You are a professional meeting summarizer. Generate a concise, well-structured summary of the meeting transcript following this template:\n\n${template}\n\nExtract the key points, decisions, and action items accurately.`,
-          },
-          {
-            role: 'user',
-            content: `Please summarize the following meeting transcript:\n\n${transcript}`,
-          },
-        ],
-        temperature: 0.3,
-        max_tokens: 1500,
-      });
+      const response = await openai.chat.completions.create(completionParams);
 
       return response.choices[0].message.content || 'Failed to generate summary';
     } catch (error) {

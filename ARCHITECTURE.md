@@ -99,18 +99,18 @@ A minimalistic web application for recording, transcribing, and summarizing meet
 ### Technology Stack
 
 #### Frontend
-- **Framework**: React with Next.js 14 (App Router)
-- **Styling**: Tailwind CSS with custom minimalistic theme
-- **State Management**: Zustand or React Context
-- **UI Components**: Headless UI (for accessibility)
-- **Icons**: SF Symbols style (Heroicons)
+- **Framework**: React 18 with TypeScript (Vite)
+- **Styling**: Tailwind CSS with custom minimalistic theme + Typography plugin
+- **Markdown Rendering**: react-markdown for summary display
+- **State Management**: Zustand
+- **Icons**: SF Symbols style (SVG icons)
 
 #### Backend
-- **Runtime**: Node.js 20+
-- **Framework**: Express.js or Fastify
-- **Audio Processing**: FFmpeg (via fluent-ffmpeg)
+- **Runtime**: Electron with Node.js 20+
+- **Audio Processing**: FFmpeg and FFprobe (with automatic path resolution for production builds)
 - **Database**: SQLite (for local storage)
-- **Encryption**: crypto module for API key encryption
+- **Encryption**: AES-256-GCM for API key encryption
+- **Audio Capture**: Electron desktopCapturer API
 
 #### macOS Audio Capture
 - **Option 1**: BlackHole (virtual audio driver) + SoX/FFmpeg
@@ -119,14 +119,14 @@ A minimalistic web application for recording, transcribing, and summarizing meet
 
 #### External APIs
 - **Transcription Services**:
-  - OpenAI Whisper API
-  - AssemblyAI
-  - Google Cloud Speech-to-Text
+  - OpenAI Whisper API (gpt-4o-transcribe, gpt-4o-transcribe-diarize, gpt-4o-mini-transcribe, gpt-4o-mini-tts)
+  - AssemblyAI (planned)
+  - Google Cloud Speech-to-Text (planned)
 
 - **LLM Services**:
-  - OpenAI GPT-4
-  - Anthropic Claude
-  - Google Gemini
+  - OpenAI GPT models (gpt-5, gpt-5-mini, gpt-4o, gpt-4o-mini)
+  - Anthropic Claude (planned)
+  - Google Gemini (planned)
 
 ---
 
@@ -231,8 +231,10 @@ interface Meeting {
 interface APIConfig {
   transcriptionProvider: 'openai' | 'assemblyai' | 'google';
   transcriptionApiKey: string;
+  transcriptionModel?: string; // Model selection for OpenAI
   llmProvider: 'openai' | 'anthropic' | 'google';
   llmApiKey: string;
+  llmModel?: string; // Model selection for OpenAI
   summaryTemplate: string;
 }
 ```
@@ -338,12 +340,14 @@ interface APIConfig {
 ## Development Phases
 
 ### Phase 1: MVP (Weeks 1-4)
-- [ ] Basic UI with recording interface
-- [ ] Audio capture implementation
-- [ ] OpenAI Whisper integration
-- [ ] OpenAI GPT integration
-- [ ] Basic summary template
-- [ ] Settings page for API keys
+- [x] Basic UI with recording interface
+- [x] Audio capture implementation
+- [x] OpenAI Whisper integration with multiple model options
+- [x] OpenAI GPT integration with GPT-5 support
+- [x] Basic summary template
+- [x] Settings page for API keys and model selection
+- [x] Markdown rendering for summaries
+- [x] Large file chunking support (>25MB)
 
 ### Phase 2: Enhancement (Weeks 5-8)
 - [ ] Multiple transcription providers
@@ -371,16 +375,27 @@ interface APIConfig {
 2. Use Electron's desktopCapturer with screen recording permission
 3. Build native macOS app with Core Audio
 
-**Recommended**: Electron with desktopCapturer (best balance of ease and functionality)
+**Implemented**: Electron with desktopCapturer API (best balance of ease and functionality)
+
+### Challenge 4: FFmpeg Path Resolution in Production
+**Problem**: Production Electron builds run with restricted PATH, causing ffmpeg/ffprobe to not be found
+
+**Solution** (Implemented):
+- Created utility to automatically detect FFmpeg installation paths
+- Checks common macOS locations (Homebrew Intel/Silicon, MacPorts)
+- Falls back to `which` command
+- Caches paths for performance
 
 ### Challenge 2: Large Audio Files
-**Problem**: Processing large audio files can be slow
+**Problem**: Processing large audio files can be slow and exceed API limits
 
-**Solutions**:
-1. Compress audio before sending to API
-2. Chunk audio for parallel processing
-3. Show progress indicators
-4. Process in background worker threads
+**Solutions** (Implemented):
+1. Automatic chunking for files over 25MB
+2. Re-encode to FLAC with 16kHz sample rate to reduce size
+3. Sequential chunk processing with progress logging
+4. Automatic cleanup of temporary chunk files
+
+**Current Implementation**: Files are split into 2-minute chunks using FFmpeg, transcribed sequentially, then combined.
 
 ### Challenge 3: API Rate Limits
 **Problem**: Transcription/LLM APIs have rate limits
