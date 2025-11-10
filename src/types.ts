@@ -14,8 +14,10 @@ export interface Meeting {
 export interface APIConfig {
   transcriptionProvider: 'openai' | 'assemblyai' | 'google';
   transcriptionApiKey: string;
+  transcriptionModel?: string; // OpenAI model selection
   llmProvider: 'openai' | 'anthropic' | 'google';
   llmApiKey: string;
+  llmModel?: string; // LLM model selection
   summaryTemplate: string;
 }
 

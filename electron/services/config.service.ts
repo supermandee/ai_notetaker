@@ -88,8 +88,10 @@ export class ConfigService {
     return {
       transcriptionProvider: 'openai',
       transcriptionApiKey: '',
+      transcriptionModel: 'gpt-4o-transcribe',
       llmProvider: 'openai',
       llmApiKey: '',
+      llmModel: 'gpt-5',
       summaryTemplate: `# Meeting Summary
 
 ## Key Points
@@ -119,5 +121,14 @@ export class ConfigService {
   getSummaryTemplate(): string {
     const config = this.getConfig();
     return config.summaryTemplate;
+  }
+
+  getModel(type: 'transcription' | 'llm'): string {
+    const config = this.getConfig();
+    if (type === 'transcription') {
+      return config.transcriptionModel || 'gpt-4o-transcribe';
+    } else {
+      return config.llmModel || 'gpt-5';
+    }
   }
 }

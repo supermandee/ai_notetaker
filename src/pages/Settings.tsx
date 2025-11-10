@@ -118,6 +118,29 @@ function Settings() {
                   </select>
                 </div>
 
+                {formData.transcriptionProvider === 'openai' && (
+                  <div>
+                    <label className="block text-sm font-medium mb-2">
+                      Model
+                    </label>
+                    <select
+                      value={formData.transcriptionModel || 'gpt-4o-transcribe'}
+                      onChange={(e) =>
+                        handleChange('transcriptionModel', e.target.value)
+                      }
+                      className="input-field"
+                    >
+                      <option value="gpt-4o-transcribe">gpt-4o-transcribe</option>
+                      <option value="gpt-4o-transcribe-diarize">gpt-4o-transcribe-diarize</option>
+                      <option value="gpt-4o-mini-transcribe">gpt-4o-mini-transcribe</option>
+                      <option value="gpt-4o-mini-tts">gpt-4o-mini-tts</option>
+                    </select>
+                    <p className="text-xs text-gray-500 mt-1">
+                      Select the transcription model for best quality and cost
+                    </p>
+                  </div>
+                )}
+
                 <div>
                   <label className="block text-sm font-medium mb-2">
                     API Key
@@ -157,7 +180,7 @@ function Settings() {
                     }
                     className="input-field"
                   >
-                    <option value="openai">OpenAI GPT-4</option>
+                    <option value="openai">OpenAI</option>
                     <option value="anthropic" disabled>
                       Anthropic Claude (Coming Soon)
                     </option>
@@ -166,6 +189,29 @@ function Settings() {
                     </option>
                   </select>
                 </div>
+
+                {formData.llmProvider === 'openai' && (
+                  <div>
+                    <label className="block text-sm font-medium mb-2">
+                      Model
+                    </label>
+                    <select
+                      value={formData.llmModel || 'gpt-5'}
+                      onChange={(e) =>
+                        handleChange('llmModel', e.target.value)
+                      }
+                      className="input-field"
+                    >
+                      <option value="gpt-5">gpt-5</option>
+                      <option value="gpt-5-mini">gpt-5-mini</option>
+                      <option value="gpt-4o">gpt-4o</option>
+                      <option value="gpt-4o-mini">gpt-4o-mini</option>
+                    </select>
+                    <p className="text-xs text-gray-500 mt-1">
+                      Select the model for generating summaries
+                    </p>
+                  </div>
+                )}
 
                 <div>
                   <label className="block text-sm font-medium mb-2">

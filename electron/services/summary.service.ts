@@ -35,10 +35,13 @@ export class SummaryService {
   private async summarizeWithOpenAI(transcript: string, apiKey: string): Promise<string> {
     const openai = new OpenAI({ apiKey });
     const template = this.configService.getSummaryTemplate();
+    const model = this.configService.getModel('llm');
+
+    console.log(`Using model for summary: ${model}`);
 
     try {
       const response = await openai.chat.completions.create({
-        model: 'gpt-4o',
+        model: model,
         messages: [
           {
             role: 'system',

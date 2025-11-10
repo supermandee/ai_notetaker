@@ -103,7 +103,8 @@ export class TranscriptionService {
 
       // Transcribe each chunk
       const transcriptions: string[] = [];
-      const model = 'gpt-4o-transcribe'; // Use gpt-4o-transcribe for better quality
+      const model = this.configService.getModel('transcription');
+      console.log(`Using model for transcription: ${model}`);
 
       for (let i = 0; i < chunkPaths.length; i++) {
         const chunkPath = chunkPaths[i];
@@ -113,7 +114,7 @@ export class TranscriptionService {
 
         const response = await openai.audio.transcriptions.create({
           file: audioFile,
-          model: model, // gpt-4o-transcribe (newer, better) or whisper-1 (classic)
+          model: model,
           language: 'en',
           response_format: 'text',
         });
