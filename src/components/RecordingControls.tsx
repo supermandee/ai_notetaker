@@ -141,7 +141,7 @@ function RecordingControls() {
 
       <div className="text-sm text-gray-500">
         <p>🎤 System Audio Recording</p>
-        <p className="text-xs mt-1">Captures all audio from your Mac (meetings, calls, etc.)</p>
+        <p className="text-xs mt-1">Captures all audio from your Mac (meetings, calls, videos etc.)</p>
       </div>
     </div>
   );

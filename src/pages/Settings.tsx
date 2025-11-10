@@ -108,7 +108,7 @@ function Settings() {
                     }
                     className="input-field"
                   >
-                    <option value="openai">OpenAI Whisper</option>
+                    <option value="openai">OpenAI</option>
                     <option value="assemblyai" disabled>
                       AssemblyAI (Coming Soon)
                     </option>
