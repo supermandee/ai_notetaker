@@ -106,12 +106,12 @@ function Settings() {
   };
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full overflow-auto">
       {/* Header */}
-      <header className="border-b border-border bg-white px-8 py-4 flex items-center">
+      <div className="px-8 py-6">
         <button
           onClick={handleBack}
-          className="p-2 hover:bg-secondary rounded-lg transition-colors mr-4"
+          className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-6"
         >
           <svg
             className="w-5 h-5"
@@ -126,9 +126,10 @@ function Settings() {
               d="M15 19l-7-7 7-7"
             />
           </svg>
+          <span>Back</span>
         </button>
-        <h1 className="text-2xl font-semibold">Settings</h1>
-      </header>
+        <h1 className="text-2xl font-medium text-gray-900">Settings</h1>
+      </div>
 
       {/* Content */}
       <main className="flex-1 overflow-auto p-8">
@@ -310,7 +311,7 @@ function Settings() {
               </button>
 
               {saveSuccess && (
-                <span className="text-green-600 text-sm">
+                <span className="text-gray-900 text-sm font-medium">
                   Settings saved successfully!
                 </span>
               )}

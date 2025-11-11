@@ -38,10 +38,10 @@ function MeetingsList() {
   const getStatusBadge = (status: string) => {
     const badges: Record<string, { text: string; color: string }> = {
       recorded: { text: 'Recorded', color: 'bg-gray-100 text-gray-700' },
-      transcribing: { text: 'Transcribing...', color: 'bg-blue-100 text-blue-700' },
-      transcribed: { text: 'Transcribed', color: 'bg-green-100 text-green-700' },
-      summarizing: { text: 'Summarizing...', color: 'bg-purple-100 text-purple-700' },
-      summarized: { text: 'Summarized', color: 'bg-accent/10 text-accent' },
+      transcribing: { text: 'Transcribing...', color: 'bg-gray-200 text-gray-800' },
+      transcribed: { text: 'Transcribed', color: 'bg-gray-300 text-gray-900' },
+      summarizing: { text: 'Summarizing...', color: 'bg-gray-400 text-white' },
+      summarized: { text: 'Summarized', color: 'bg-gray-900 text-white' },
     };
 
     const badge = badges[status] || badges.recorded;
@@ -68,17 +68,18 @@ function MeetingsList() {
 
   return (
     <div className="space-y-3">
-      {meetings.slice(0, 10).map((meeting) => (
+      {meetings.map((meeting) => (
         <button
           key={meeting.id}
           onClick={() => handleMeetingClick(meeting.id)}
-          className="card w-full text-left hover:shadow-md transition-shadow"
+          className="w-full bg-white rounded-lg p-5 text-left hover:shadow-sm transition-shadow border border-gray-100"
         >
           <div className="flex items-start justify-between">
             <div className="flex-1">
-              <h3 className="font-medium text-lg mb-1">{meeting.title}</h3>
-              <div className="flex items-center gap-4 text-sm text-gray-500">
+              <h3 className="font-medium text-gray-900 text-lg mb-2">{meeting.title}</h3>
+              <div className="flex items-center gap-2 text-sm text-gray-500">
                 <span>{formatDate(meeting.date)}</span>
+                <span>•</span>
                 <span>{formatDuration(meeting.duration)}</span>
               </div>
             </div>

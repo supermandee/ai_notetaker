@@ -3,6 +3,7 @@ import { useAppStore } from './store/appStore';
 import Home from './pages/Home';
 import Settings from './pages/Settings';
 import MeetingDetail from './pages/MeetingDetail';
+import Sidebar from './components/Sidebar';
 
 function App() {
   const { currentView, setMeetings, setConfig } = useAppStore();
@@ -37,10 +38,13 @@ function App() {
   }, [setMeetings, setConfig]);
 
   return (
-    <div className="h-screen flex flex-col">
-      {currentView === 'home' && <Home />}
-      {currentView === 'settings' && <Settings />}
-      {currentView === 'meeting-detail' && <MeetingDetail />}
+    <div className="h-screen flex">
+      <div className="flex-1 overflow-hidden">
+        {currentView === 'home' && <Home />}
+        {currentView === 'settings' && <Settings />}
+        {currentView === 'meeting-detail' && <MeetingDetail />}
+      </div>
+      <Sidebar />
     </div>
   );
 }

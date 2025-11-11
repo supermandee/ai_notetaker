@@ -151,32 +151,31 @@ function MeetingDetail() {
   };
 
   const handleSummarize = async () => {
-    if (!meeting || !meeting.transcript) return;
+    if (!meeting?.transcript) return;
     await handleSummarizeWithTranscript(meeting.transcript);
   };
 
-  const handleExport = async (format: 'md' | 'txt') => {
+  const handleExport = (format: 'md' | 'txt') => {
     if (!meeting) return;
 
-    try {
-      const result = await window.electronAPI.exportMeeting(meeting.id, format);
+    const content = activeTab === 'transcript'
+      ? meeting.transcript
+      : meeting.summary;
 
-      if (result.success && result.content) {
-        // Create a download link
-        const blob = new Blob([result.content], {
-          type: format === 'md' ? 'text/markdown' : 'text/plain',
-        });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `${meeting.title}.${format}`;
-        a.click();
-        URL.revokeObjectURL(url);
-      }
-    } catch (error) {
-      console.error('Error exporting:', error);
-      alert('Failed to export meeting. Please try again.');
+    if (!content) {
+      alert('No content to export');
+      return;
     }
+
+    const blob = new Blob([content], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${meeting.title}.${format}`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   };
 
   const handleTitleSave = async () => {
@@ -216,157 +215,160 @@ function MeetingDetail() {
   }
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full overflow-auto">
       {/* Header */}
-      <header className="border-b border-border bg-white px-8 py-4">
-        <div className="flex items-start justify-between">
-          <div className="flex items-start gap-4 flex-1">
-            <button
-              onClick={() => setCurrentView('home')}
-              className="p-2 hover:bg-secondary rounded-lg transition-colors mt-1"
-            >
-              <svg
-                className="w-5 h-5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
+      <div className="px-8 py-6">
+        <button
+          onClick={() => setCurrentView('home')}
+          className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-6"
+        >
+          <svg
+            className="w-5 h-5"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M15 19l-7-7 7-7"
+            />
+          </svg>
+          <span>Back</span>
+        </button>
+
+        <div>
+          {isEditingTitle ? (
+            <div className="flex items-center gap-2">
+              <input
+                type="text"
+                value={editedTitle}
+                onChange={(e) => setEditedTitle(e.target.value)}
+                className="border border-gray-300 rounded px-3 py-1 text-2xl font-medium"
+                autoFocus
+              />
+              <button
+                onClick={handleTitleSave}
+                className="bg-gray-900 text-white px-4 py-2 rounded hover:bg-gray-800"
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M15 19l-7-7 7-7"
-                />
-              </svg>
-            </button>
-
-            <div className="flex-1">
-              {isEditingTitle ? (
-                <div className="flex items-center gap-2">
-                  <input
-                    type="text"
-                    value={editedTitle}
-                    onChange={(e) => setEditedTitle(e.target.value)}
-                    className="input-field text-2xl font-semibold"
-                    autoFocus
-                  />
-                  <button
-                    onClick={handleTitleSave}
-                    className="btn-primary py-2 px-4"
-                  >
-                    Save
-                  </button>
-                  <button
-                    onClick={() => {
-                      setIsEditingTitle(false);
-                      setEditedTitle(meeting.title);
-                    }}
-                    className="btn-secondary py-2 px-4"
-                  >
-                    Cancel
-                  </button>
-                </div>
-              ) : (
-                <h1
-                  onClick={() => setIsEditingTitle(true)}
-                  className="text-2xl font-semibold cursor-pointer hover:text-accent"
-                >
-                  {meeting.title}
-                </h1>
-              )}
-
-              <div className="flex items-center gap-4 text-sm text-gray-500 mt-1">
-                <span>{new Date(meeting.date).toLocaleString()}</span>
-                <span>{formatDuration(meeting.duration)}</span>
-              </div>
+                Save
+              </button>
+              <button
+                onClick={() => {
+                  setIsEditingTitle(false);
+                  setEditedTitle(meeting.title);
+                }}
+                className="bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-50"
+              >
+                Cancel
+              </button>
             </div>
-          </div>
+          ) : (
+            <h1
+              onClick={() => setIsEditingTitle(true)}
+              className="text-2xl font-medium text-gray-900 cursor-pointer hover:text-gray-700 mb-2"
+            >
+              {meeting.title}
+            </h1>
+          )}
 
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => handleExport('md')}
-              className="btn-secondary"
-              disabled={!meeting.summary && !meeting.transcript}
-            >
-              Export MD
-            </button>
-            <button
-              onClick={() => handleExport('txt')}
-              className="btn-secondary"
-              disabled={!meeting.summary && !meeting.transcript}
-            >
-              Export TXT
-            </button>
+          <div className="flex items-center gap-2 text-sm text-gray-500">
+            <span>{new Date(meeting.date).toLocaleString('en-US', {
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric',
+              hour: 'numeric',
+              minute: '2-digit',
+              hour12: true
+            })}</span>
+            <span>•</span>
+            <span>{formatDuration(meeting.duration).replace(/h |m |s/g, (match) => match.trim())}</span>
           </div>
         </div>
-      </header>
+
+        {/* Action Buttons */}
+        <div className="flex items-center gap-3 mt-6">
+          {!meeting.transcript && !isTranscribing && (
+            <button
+              onClick={handleTranscribe}
+              className="bg-gray-900 text-white px-4 py-2 rounded-full hover:bg-gray-800 text-sm font-medium"
+            >
+              Transcribe Audio
+            </button>
+          )}
+          {isTranscribing && (
+            <span className="text-sm text-gray-600">Transcribing...</span>
+          )}
+          {meeting.transcript && !meeting.summary && !isSummarizing && (
+            <button
+              onClick={handleSummarize}
+              className="bg-gray-900 text-white px-4 py-2 rounded-full hover:bg-gray-800 text-sm font-medium"
+            >
+              Generate Summary
+            </button>
+          )}
+          {meeting.summary && !isSummarizing && (
+            <button
+              onClick={handleSummarize}
+              className="bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-full hover:bg-gray-50 text-sm font-medium"
+            >
+              Regenerate Summary
+            </button>
+          )}
+          {isSummarizing && (
+            <span className="text-sm text-gray-600">Generating summary...</span>
+          )}
+          {(meeting.transcript || meeting.summary) && (
+            <>
+              <button
+                onClick={() => handleExport('md')}
+                className="bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-full hover:bg-gray-50 text-sm font-medium"
+              >
+                Export MD
+              </button>
+              <button
+                onClick={() => handleExport('txt')}
+                className="bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-full hover:bg-gray-50 text-sm font-medium"
+              >
+                Export TXT
+              </button>
+            </>
+          )}
+        </div>
+      </div>
 
       {/* Content */}
-      <main className="flex-1 overflow-auto p-8">
-        <div className="max-w-4xl mx-auto space-y-6">
-          {/* Action Buttons */}
-          <div className="flex gap-4">
-            {!meeting.transcript && (
-              <button
-                onClick={handleTranscribe}
-                disabled={isTranscribing}
-                className="btn-primary"
-              >
-                {isTranscribing ? 'Transcribing...' : 'Transcribe Audio'}
-              </button>
-            )}
-
-            {meeting.transcript && !meeting.summary && (
-              <button
-                onClick={handleSummarize}
-                disabled={isSummarizing}
-                className="btn-primary"
-              >
-                {isSummarizing ? 'Generating Summary...' : 'Generate Summary'}
-              </button>
-            )}
-
-            {meeting.transcript && meeting.summary && (
-              <button
-                onClick={handleSummarize}
-                disabled={isSummarizing}
-                className="btn-secondary"
-              >
-                {isSummarizing ? 'Regenerating summary...' : 'Regenerate Summary'}
-              </button>
-            )}
-          </div>
-
+      <main className="flex-1 px-8 pb-8">
+        <div className="max-w-5xl mx-auto">
           {/* Tabs */}
           {(meeting.transcript || meeting.summary) && (
-            <div className="border-b border-border">
-              <div className="flex gap-8">
-                <button
-                  onClick={() => setActiveTab('summary')}
-                  className={`pb-2 font-medium transition-colors ${
-                    activeTab === 'summary'
-                      ? 'text-accent border-b-2 border-accent'
-                      : 'text-gray-500 hover:text-text'
-                  }`}
-                >
-                  Summary
-                </button>
-                <button
-                  onClick={() => setActiveTab('transcript')}
-                  className={`pb-2 font-medium transition-colors ${
-                    activeTab === 'transcript'
-                      ? 'text-accent border-b-2 border-accent'
-                      : 'text-gray-500 hover:text-text'
-                  }`}
-                >
-                  Transcript
-                </button>
-              </div>
+            <div className="flex gap-2 mb-6">
+              <button
+                onClick={() => setActiveTab('summary')}
+                className={`px-6 py-2.5 rounded-full font-medium transition-colors ${
+                  activeTab === 'summary'
+                    ? 'bg-gray-900 text-white'
+                    : 'bg-white text-gray-600 hover:bg-gray-100'
+                }`}
+              >
+                Summary
+              </button>
+              <button
+                onClick={() => setActiveTab('transcript')}
+                className={`px-6 py-2.5 rounded-full font-medium transition-colors ${
+                  activeTab === 'transcript'
+                    ? 'bg-gray-900 text-white'
+                    : 'bg-white text-gray-600 hover:bg-gray-100'
+                }`}
+              >
+                Transcript
+              </button>
             </div>
           )}
 
           {/* Content Area */}
-          <div className="card">
+          <div className="bg-white rounded-lg p-8">
             {activeTab === 'summary' && (
               <div>
                 {meeting.summary ? (

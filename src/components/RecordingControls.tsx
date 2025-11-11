@@ -119,34 +119,58 @@ function RecordingControls() {
   };
 
   return (
-    <div className="card text-center">
-      {/* Timer Display */}
-      <div className="mb-8">
-        <div className={`text-5xl font-light tabular-nums ${isRecording ? 'text-red-500' : 'text-text'}`}>
-          {isRecording && (
-            <span className="inline-block w-3 h-3 bg-red-500 rounded-full mr-4 animate-pulse" />
-          )}
-          {formatTime(recordingDuration)}
+    <div className="flex flex-col items-center justify-center py-16">
+      {/* Circular Microphone Icon */}
+      <div className="mb-6">
+        <div className={`w-32 h-32 rounded-full flex items-center justify-center transition-colors ${
+          isRecording ? 'bg-red-500' : 'bg-gray-900'
+        }`}>
+          <svg
+            className="w-16 h-16 text-white"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"
+            />
+          </svg>
         </div>
       </div>
 
-      {/* Recording Button */}
-      <div className="mb-6">
-        {!isRecording ? (
-          <button onClick={startRecording} className="btn-primary px-12">
-            Start Recording
-          </button>
+      {/* Status Text */}
+      <div className="mb-8 text-center">
+        {isRecording ? (
+          <div>
+            <div className="text-xl text-gray-600 mb-2">Recording</div>
+            <div className="text-3xl font-light text-gray-900 tabular-nums">
+              {formatTime(recordingDuration)}
+            </div>
+          </div>
         ) : (
-          <button onClick={stopRecording} className="btn-secondary px-12">
-            Stop Recording
-          </button>
+          <div className="text-xl text-gray-600">Ready to record</div>
         )}
       </div>
 
-      <div className="text-sm text-gray-500">
-        <p>🎤 System Audio Recording</p>
-        <p className="text-xs mt-1">Captures all audio from your Mac (meetings, calls, videos etc.)</p>
-      </div>
+      {/* Recording Button */}
+      {!isRecording ? (
+        <button
+          onClick={startRecording}
+          className="bg-gray-900 text-white px-10 py-3 rounded-full hover:bg-gray-800 transition-colors text-base font-medium"
+        >
+          Start Recording
+        </button>
+      ) : (
+        <button
+          onClick={stopRecording}
+          className="bg-white text-gray-900 border-2 border-gray-900 px-10 py-3 rounded-full hover:bg-gray-50 transition-colors text-base font-medium"
+        >
+          Stop Recording
+        </button>
+      )}
     </div>
   );
 }

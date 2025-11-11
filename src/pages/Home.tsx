@@ -1,11 +1,10 @@
 import { useEffect } from 'react';
 import RecordingControls from '../components/RecordingControls';
 import MeetingsList from '../components/MeetingsList';
-import Header from '../components/Header';
 import { useAppStore } from '../store/appStore';
 
 function Home() {
-  const { setMeetings } = useAppStore();
+  const { setMeetings, meetings } = useAppStore();
 
   // Refresh meetings list when component mounts
   useEffect(() => {
@@ -21,18 +20,24 @@ function Home() {
   }, [setMeetings]);
 
   return (
-    <div className="flex flex-col h-full">
-      <Header />
+    <div className="flex flex-col h-full overflow-auto">
+      <main className="flex-1 px-4 sm:px-8 md:px-16 py-8">
+        {/* Title */}
+        <h1 className="text-2xl font-medium text-gray-900 mb-12 text-center w-full">AI Notetaker</h1>
 
-      <main className="flex-1 overflow-auto p-8">
-        <div className="max-w-2xl mx-auto space-y-8">
-          {/* Recording Section */}
+        {/* Recording Section */}
+        <div className="max-w-3xl mx-auto">
           <RecordingControls />
 
-          {/* Recent Meetings */}
-          <div>
-            <h2 className="text-xl font-semibold mb-4">Recent Meetings</h2>
-            <MeetingsList />
+          {/* Recent Meetings or Empty State */}
+          <div className="mt-16">
+            {meetings.length === 0 ? (
+              <p className="text-center text-gray-500">
+                No meetings yet. Start recording to create your first meeting.
+              </p>
+            ) : (
+              <MeetingsList />
+            )}
           </div>
         </div>
       </main>
