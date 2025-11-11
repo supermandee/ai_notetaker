@@ -185,29 +185,32 @@ User clicks "Record"
     → Display recording timer
     → User clicks "Stop"
     → Save audio file locally
-    → Show transcription option
+    → Navigate to meeting detail page
+    → Automatically start transcription (see Transcription Flow)
 ```
 
 ### Transcription Flow
 
 ```
-User uploads/selects audio file
-    → Send to selected transcription API
-    → Poll for completion (or stream if supported)
-    → Display transcript in editor
-    → Save to local database
-    → Show summary generation option
+Automatic (after recording stops) OR User clicks "Transcribe Audio"
+    → Send audio file to selected transcription API
+    → Display transcription progress
+    → Receive transcript from API
+    → Save transcript to local database
+    → Update UI with transcript
+    → Automatically trigger summary generation (see Summary Generation Flow)
 ```
 
 ### Summary Generation Flow
 
 ```
-User clicks "Generate Summary"
+Automatic (after transcription completes) OR User clicks "Generate Summary"
     → Send transcript + template to LLM API
-    → Display loading state
+    → Display loading state (showing "Generating Summary...")
     → Receive and display summary
+    → Save summary to database
+    → Switch to summary tab to display result
     → Allow editing and export
-    → Save to database
 ```
 
 ### Data Models
@@ -348,13 +351,14 @@ interface APIConfig {
 - [x] Settings page for API keys and model selection
 - [x] Markdown rendering for summaries
 - [x] Large file chunking support (>25MB)
+- [x] Automatic transcription and summarization workflow
 
 ### Phase 2: Enhancement (Weeks 5-8)
 - [ ] Multiple transcription providers
 - [ ] Multiple LLM providers
 - [ ] Custom summary templates
 - [ ] Meeting history and search
-- [ ] Export functionality
+- [x] Export functionality
 
 ### Phase 3: Advanced Features (Weeks 9+)
 - [ ] Auto-detection of meetings
@@ -385,6 +389,16 @@ interface APIConfig {
 - Checks common macOS locations (Homebrew Intel/Silicon, MacPorts)
 - Falls back to `which` command
 - Caches paths for performance
+
+### Challenge 5: Audio Stream Initialization Timeout
+**Problem**: Swift Recorder binary intermittently fails with "STREAM_FUNCTION_NOT_CALLED" error on first recording attempt. The screen capture system needs time to initialize and deliver the first audio buffer, but this can exceed the timeout period, especially on slower systems or first run.
+
+**Solution** (Implemented):
+- Increased stream initialization timeout from 2 seconds to 5 seconds in Swift Recorder
+- Allows sufficient time for macOS ScreenCaptureKit to initialize and start delivering audio samples
+- Reduces intermittent failures while maintaining reasonable timeout protection
+
+**Technical Details**: The Swift Recorder waits for the `stream(_:didOutputSampleBuffer:of:)` delegate method to be called, which confirms that the audio stream is actively delivering data. If this doesn't happen within the timeout, it indicates a system-level issue rather than the recorder waiting indefinitely.
 
 ### Challenge 2: Large Audio Files
 **Problem**: Processing large audio files can be slow and exceed API limits

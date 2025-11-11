@@ -79,6 +79,16 @@ export class SystemAudioService {
             resolve({ success: true, filePath: response.path });
           } else if (response.code === 'PERMISSION_DENIED') {
             resolve({ success: false, error: 'Screen recording permission denied' });
+          } else if (response.code === 'NO_DISPLAY_FOUND') {
+            const isDev = process.env.NODE_ENV === 'development';
+            if (isDev) {
+              resolve({
+                success: false,
+                error: 'Screen Recording permission needed for development.\n\nPlease run: ./grant-dev-permission.sh\n\nOr manually grant Screen Recording permission to your terminal app in System Settings > Privacy & Security > Screen Recording'
+              });
+            } else {
+              resolve({ success: false, error: 'No display found. Please check Screen Recording permissions in System Settings.' });
+            }
           } else if (response.code === 'CAPTURE_FAILED') {
             resolve({ success: false, error: 'Failed to start audio capture' });
           } else if (response.code !== 'RECORDING_STOPPED') {

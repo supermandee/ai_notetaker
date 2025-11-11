@@ -17,6 +17,7 @@ AI Notetaker is an Electron-based desktop application built with React and TypeS
 ## Features
 
 - **Audio Recording**: Capture system audio from meetings on Teams, Zoom, Google Meet, and other platforms
+- **Automatic Workflow**: After recording, automatically transcribes audio and generates summary - no manual intervention needed
 - **AI Transcription**: Convert audio to text using OpenAI Whisper models (gpt-4o-transcribe, gpt-4o-transcribe-diarize, gpt-4o-mini-transcribe, gpt-4o-mini-tts)
 - **AI Summarization**: Generate structured meeting summaries using GPT models (gpt-5, gpt-5-mini, gpt-4o, gpt-4o-mini)
 - **Model Selection**: Choose the best model for your needs and budget
@@ -65,6 +66,21 @@ This will:
 - Start the Vite development server for the React frontend
 - Launch Electron with the app in development mode
 - Enable hot module replacement for fast development
+
+### Setting Up Recording in Development Mode
+
+**Important:** Recording in development mode requires additional setup due to macOS Screen Recording permissions.
+
+#### Quick Setup:
+```bash
+# Grant Screen Recording permission to your terminal app
+./grant-dev-permission.sh
+
+# Then run the dev server
+npm run dev
+```
+
+For detailed setup instructions, see [DEV_RECORDING_SETUP.md](./DEV_RECORDING_SETUP.md)
 
 ### Available Scripts
 
@@ -127,10 +143,21 @@ Your API keys are encrypted using AES-256-GCM and stored locally. They are never
 4. The recording will start automatically
 5. Click "Stop Recording" when the meeting ends
 
-### Transcribing and Summarizing
+### Automatic Processing
 
+After you stop recording, the app will automatically:
+1. Navigate to the meeting detail page
+2. Start transcribing the audio using your configured transcription model
+3. Once transcription completes, automatically generate a summary using your configured summary model
+4. Display the final summary on the screen
+
+The entire process is automatic - just start and stop recording, and the app handles the rest!
+
+### Manual Transcription and Summarization
+
+You can also manually process existing recordings:
 1. Click on a meeting from the Recent Meetings list
-2. Click "Transcribe Audio" to convert the audio to text
+2. Click "Transcribe Audio" to convert the audio to text (if not already transcribed)
 3. Once transcribed, click "Generate Summary" to create a structured summary
 4. View the transcript or summary using the tabs
 
@@ -174,8 +201,21 @@ These permissions can be managed in System Preferences > Security & Privacy > Pr
 
 ## Troubleshooting
 
-### Recording doesn't capture audio
-- Ensure you've granted Screen Recording permission in System Preferences
+### Recording doesn't work in development mode
+- **Error:** "NO_DISPLAY_FOUND" or "Screen Recording permission needed"
+- **Solution:** Run `./grant-dev-permission.sh` to set up permissions
+- See [DEV_RECORDING_SETUP.md](./DEV_RECORDING_SETUP.md) for detailed instructions
+
+### Intermittent "STREAM_FUNCTION_NOT_CALLED" error
+- **Error:** Recording fails on first attempt with "STREAM_FUNCTION_NOT_CALLED" but works on retry
+- **Cause:** macOS ScreenCaptureKit needs time to initialize and start delivering audio samples
+- **Solution:** This has been fixed by increasing the stream initialization timeout from 2 to 5 seconds. If you still encounter this, try:
+  - Wait a few seconds before starting your first recording
+  - Ensure no other apps are heavily using system resources
+  - If persistent, restart the application
+
+### Recording doesn't capture audio in production
+- Ensure you've granted Screen Recording permission to "AI Notetaker" in System Preferences
 - Select the correct audio source (the window or screen with your meeting)
 - Some apps may have additional audio privacy settings
 

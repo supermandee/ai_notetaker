@@ -11,12 +11,21 @@ function MeetingDetail() {
   const [activeTab, setActiveTab] = useState<'transcript' | 'summary'>('summary');
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [editedTitle, setEditedTitle] = useState('');
+  const [autoStarted, setAutoStarted] = useState(false);
 
   useEffect(() => {
     if (selectedMeetingId) {
       loadMeeting(selectedMeetingId);
     }
   }, [selectedMeetingId]);
+
+  // Auto-start transcription for newly recorded meetings
+  useEffect(() => {
+    if (meeting && meeting.status === 'recorded' && !isTranscribing && !autoStarted) {
+      setAutoStarted(true);
+      handleTranscribe();
+    }
+  }, [meeting, isTranscribing, autoStarted]);
 
   const loadMeeting = async (id: string) => {
     try {
@@ -53,24 +62,28 @@ function MeetingDetail() {
         setMeeting(updatedMeeting);
         updateMeeting(meeting.id, updatedMeeting);
         setActiveTab('transcript');
+
+        // Automatically start summary generation after transcription
+        setIsTranscribing(false);
+        handleSummarizeWithTranscript(result.transcript);
       } else {
         alert(`Transcription failed: ${result.error || 'Unknown error'}`);
+        setIsTranscribing(false);
       }
     } catch (error) {
       console.error('Error transcribing:', error);
       alert('Failed to transcribe audio. Please try again.');
-    } finally {
       setIsTranscribing(false);
     }
   };
 
-  const handleSummarize = async () => {
-    if (!meeting || !meeting.transcript) return;
+  const handleSummarizeWithTranscript = async (transcript: string) => {
+    if (!meeting) return;
 
     setIsSummarizing(true);
 
     try {
-      const result = await window.electronAPI.generateSummary(meeting.transcript);
+      const result = await window.electronAPI.generateSummary(transcript);
 
       if (result.success && result.summary) {
         const updatedMeeting = {
@@ -96,6 +109,11 @@ function MeetingDetail() {
     } finally {
       setIsSummarizing(false);
     }
+  };
+
+  const handleSummarize = async () => {
+    if (!meeting || !meeting.transcript) return;
+    await handleSummarizeWithTranscript(meeting.transcript);
   };
 
   const handleExport = async (format: 'md' | 'txt') => {

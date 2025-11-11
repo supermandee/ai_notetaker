@@ -8,8 +8,7 @@ class RecorderCLI: NSObject, SCStreamDelegate, SCStreamOutput {
     let semaphoreRecordingStopped = DispatchSemaphore(value: 0)
     var recordingPath: String?
     var recordingFilename: String?
-    var streamFunctionCalled = false
-    var streamFunctionTimeout: TimeInterval = 2.0
+    var hasReportedStart = false
 
     override init() {
         super.init()
@@ -48,7 +47,6 @@ class RecorderCLI: NSObject, SCStreamDelegate, SCStreamOutput {
     func executeRecordingProcess() {
         self.updateAvailableContent()
         setupInterruptSignalHandler()
-        setupStreamFunctionTimeout()
         semaphoreRecordingStopped.wait()
     }
 
@@ -64,25 +62,6 @@ class RecorderCLI: NSObject, SCStreamDelegate, SCStreamOutput {
         }
 
         signal(SIGINT, interruptSignalHandler)
-    }
-
-    func setupStreamFunctionTimeout() {
-        DispatchQueue.global().asyncAfter(deadline: .now() + streamFunctionTimeout) { [weak self] in
-            guard let self = self else { return }
-            if !self.streamFunctionCalled {
-                RecorderCLI.terminateRecording()
-                ResponseHandler.returnResponse(["code": "STREAM_FUNCTION_NOT_CALLED"], shouldExitProcess: true)
-            } else {
-                let timestamp = Date()
-                let formattedTimestamp = ISO8601DateFormatter().string(from: timestamp)
-
-                let filename = self.recordingFilename ?? timestamp.toFormattedFileName()
-                let pathForAudioFile = "\(self.recordingPath!)/\(filename).flac"
-                self.prepareAudioFile(at: pathForAudioFile)
-
-                ResponseHandler.returnResponse(["code": "RECORDING_STARTED", "path": pathForAudioFile, "timestamp": formattedTimestamp], shouldExitProcess: false)
-            }
-        }
     }
 
     func updateAvailableContent() {
@@ -137,8 +116,21 @@ class RecorderCLI: NSObject, SCStreamDelegate, SCStreamOutput {
     }
 
     func stream(_ stream: SCStream, didOutputSampleBuffer sampleBuffer: CMSampleBuffer, of outputType: SCStreamOutputType) {
-        self.streamFunctionCalled = true
         guard let audioBuffer = sampleBuffer.asPCMBuffer, sampleBuffer.isValid else { return }
+
+        // On first buffer, prepare the audio file and report success
+        if !self.hasReportedStart {
+            self.hasReportedStart = true
+
+            let timestamp = Date()
+            let formattedTimestamp = ISO8601DateFormatter().string(from: timestamp)
+
+            let filename = self.recordingFilename ?? timestamp.toFormattedFileName()
+            let pathForAudioFile = "\(self.recordingPath!)/\(filename).flac"
+            self.prepareAudioFile(at: pathForAudioFile)
+
+            ResponseHandler.returnResponse(["code": "RECORDING_STARTED", "path": pathForAudioFile, "timestamp": formattedTimestamp], shouldExitProcess: false)
+        }
 
         do {
             try RecorderCLI.audioFileForRecording?.write(from: audioBuffer)

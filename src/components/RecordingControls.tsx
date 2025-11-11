@@ -8,6 +8,8 @@ function RecordingControls() {
     setRecording,
     setRecordingDuration,
     addMeeting,
+    setCurrentView,
+    setSelectedMeetingId,
   } = useAppStore();
 
   const [recordingStartTime, setRecordingStartTime] = useState<number>(0);
@@ -93,7 +95,9 @@ function RecordingControls() {
             updatedAt: timestamp,
           });
 
-          alert('Recording saved successfully!');
+          // Navigate to meeting detail page to auto-start transcription
+          setSelectedMeetingId(saveResult.id);
+          setCurrentView('meeting-detail');
         } else {
           throw new Error(saveResult.error || 'Failed to save meeting');
         }
