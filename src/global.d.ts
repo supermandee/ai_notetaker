@@ -20,7 +20,8 @@ interface ElectronAPI {
 
   // Transcription and summary
   transcribeAudio: (filePath: string) => Promise<{ success: boolean; transcript?: string; error?: string }>;
-  generateSummary: (transcript: string) => Promise<{ success: boolean; summary?: string; error?: string }>;
+  generateSummary: (transcript: string) => Promise<{ success: boolean; summary?: string; title?: string; error?: string }>;
+  generateMeetingTitle: (summary: string) => Promise<{ success: boolean; title?: string; error?: string }>;
 
   // Config
   getConfig: () => Promise<{ success: boolean; config?: APIConfig; error?: string }>;

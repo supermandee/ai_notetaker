@@ -1,8 +1,25 @@
+import { useEffect } from 'react';
 import RecordingControls from '../components/RecordingControls';
 import MeetingsList from '../components/MeetingsList';
 import Header from '../components/Header';
+import { useAppStore } from '../store/appStore';
 
 function Home() {
+  const { setMeetings } = useAppStore();
+
+  // Refresh meetings list when component mounts
+  useEffect(() => {
+    const loadMeetings = async () => {
+      if (window.electronAPI) {
+        const result = await window.electronAPI.getMeetings();
+        if (result.success && result.meetings) {
+          setMeetings(result.meetings);
+        }
+      }
+    };
+    loadMeetings();
+  }, [setMeetings]);
+
   return (
     <div className="flex flex-col h-full">
       <Header />

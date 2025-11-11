@@ -13,12 +13,21 @@ function Settings() {
   });
   const [isSaving, setIsSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
+  const [showWarning, setShowWarning] = useState(false);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
   useEffect(() => {
     if (config) {
       setFormData(config);
     }
   }, [config]);
+
+  // Detect unsaved changes
+  useEffect(() => {
+    if (!config) return;
+    const changed = JSON.stringify(formData) !== JSON.stringify(config);
+    setHasUnsavedChanges(changed);
+  }, [formData, config]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -60,12 +69,48 @@ function Settings() {
     }));
   };
 
+  const handleBack = () => {
+    if (hasUnsavedChanges) {
+      setShowWarning(true);
+    } else {
+      setCurrentView('home');
+    }
+  };
+
+  const handleSaveAndGo = async () => {
+    setShowWarning(false);
+    setIsSaving(true);
+    try {
+      const result = await window.electronAPI.saveConfig(formData);
+      if (result.success) {
+        setConfig(formData);
+        setCurrentView('home');
+      } else {
+        alert('Failed to save settings. Please try again.');
+      }
+    } catch (error) {
+      console.error('Error saving config:', error);
+      alert('Failed to save settings. Please try again.');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleDiscard = () => {
+    setShowWarning(false);
+    setCurrentView('home');
+  };
+
+  const handleCancel = () => {
+    setShowWarning(false);
+  };
+
   return (
     <div className="flex flex-col h-full">
       {/* Header */}
       <header className="border-b border-border bg-white px-8 py-4 flex items-center">
         <button
-          onClick={() => setCurrentView('home')}
+          onClick={handleBack}
           className="p-2 hover:bg-secondary rounded-lg transition-colors mr-4"
         >
           <svg
@@ -273,6 +318,39 @@ function Settings() {
           </form>
         </div>
       </main>
+
+      {/* Unsaved Changes Warning Dialog */}
+      {showWarning && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl p-6 max-w-md w-full mx-4 shadow-xl">
+            <h3 className="text-xl font-semibold mb-2">Unsaved Changes</h3>
+            <p className="text-gray-600 mb-6">
+              You have unsaved changes. What would you like to do?
+            </p>
+            <div className="flex flex-col gap-3">
+              <button
+                onClick={handleSaveAndGo}
+                disabled={isSaving}
+                className="btn-primary w-full"
+              >
+                {isSaving ? 'Saving...' : 'Save Changes'}
+              </button>
+              <button
+                onClick={handleDiscard}
+                className="btn-secondary w-full"
+              >
+                Discard Changes
+              </button>
+              <button
+                onClick={handleCancel}
+                className="text-gray-600 hover:text-gray-800 py-2"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

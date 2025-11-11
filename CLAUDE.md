@@ -148,3 +148,4 @@ Development and production use different locations based on Electron's `app.getP
 **API Integration:**
 All external API calls go through service layer. API keys are retrieved from ConfigService, which handles decryption automatically.
 - update @ARCHITECTURE.md and @README.md to reflect new changes before each commit
+- when coding, make sure there is separation of concerns. do not overcomplicate solutions, use the most minimal changes to achieve the best resultsac

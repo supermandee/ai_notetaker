@@ -196,10 +196,21 @@ ipcMain.handle('transcribe-audio', async (_event, filePath: string) => {
 // Generate summary
 ipcMain.handle('generate-summary', async (_event, transcript: string) => {
   try {
-    const summary = await summaryService.generateSummary(transcript);
-    return { success: true, summary };
+    const result = await summaryService.generateSummary(transcript);
+    return { success: true, summary: result.summary, title: result.title };
   } catch (error) {
     console.error('Error generating summary:', error);
+    return { success: false, error: (error as Error).message };
+  }
+});
+
+// Generate meeting title
+ipcMain.handle('generate-meeting-title', async (_event, summary: string) => {
+  try {
+    const title = await summaryService.generateMeetingTitle(summary);
+    return { success: true, title };
+  } catch (error) {
+    console.error('Error generating meeting title:', error);
     return { success: false, error: (error as Error).message };
   }
 });

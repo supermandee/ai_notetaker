@@ -27,6 +27,26 @@ function MeetingDetail() {
     }
   }, [meeting, isTranscribing, autoStarted]);
 
+  // Sync local state with meeting status (for when returning to in-progress meetings)
+  useEffect(() => {
+    if (meeting) {
+      // Only set isTranscribing to true for 'transcribing' status
+      // Don't set to false for 'recorded' status (let auto-start handle it)
+      if (meeting.status === 'transcribing') {
+        setIsTranscribing(true);
+      } else if (meeting.status === 'transcribed' || meeting.status === 'summarizing' || meeting.status === 'summarized') {
+        setIsTranscribing(false);
+      }
+
+      // Only set isSummarizing to true for 'summarizing' status
+      if (meeting.status === 'summarizing') {
+        setIsSummarizing(true);
+      } else if (meeting.status === 'summarized') {
+        setIsSummarizing(false);
+      }
+    }
+  }, [meeting?.status]);
+
   const loadMeeting = async (id: string) => {
     try {
       const result = await window.electronAPI.getMeeting(id);
@@ -43,6 +63,12 @@ function MeetingDetail() {
     if (!meeting) return;
 
     setIsTranscribing(true);
+
+    // Update status to 'transcribing' at the start
+    await window.electronAPI.updateMeeting(meeting.id, {
+      status: 'transcribing',
+    });
+    updateMeeting(meeting.id, { status: 'transcribing' });
 
     try {
       const result = await window.electronAPI.transcribeAudio(meeting.audioFilePath);
@@ -82,22 +108,35 @@ function MeetingDetail() {
 
     setIsSummarizing(true);
 
+    // Update status to 'summarizing' at the start
+    await window.electronAPI.updateMeeting(meeting.id, {
+      status: 'summarizing',
+    });
+    updateMeeting(meeting.id, { status: 'summarizing' });
+
     try {
       const result = await window.electronAPI.generateSummary(transcript);
 
       if (result.success && result.summary) {
+        // Use title from summary response if available, otherwise keep default
+        const meetingTitle = result.title || meeting.title;
+
         const updatedMeeting = {
           ...meeting,
+          title: meetingTitle,
+          transcript: transcript, // Ensure transcript is preserved
           summary: result.summary,
           status: 'summarized' as const,
         };
 
         await window.electronAPI.updateMeeting(meeting.id, {
+          title: meetingTitle,
           summary: result.summary,
           status: 'summarized',
         });
 
         setMeeting(updatedMeeting);
+        setEditedTitle(meetingTitle);
         updateMeeting(meeting.id, updatedMeeting);
         setActiveTab('summary');
       } else {
@@ -293,7 +332,7 @@ function MeetingDetail() {
                 disabled={isSummarizing}
                 className="btn-secondary"
               >
-                {isSummarizing ? 'Regenerating...' : 'Regenerate Summary'}
+                {isSummarizing ? 'Regenerating summary...' : 'Regenerate Summary'}
               </button>
             )}
           </div>
