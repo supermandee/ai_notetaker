@@ -20,9 +20,3 @@ export interface APIConfig {
   llmModel?: string; // LLM model selection
   summaryTemplate: string;
 }
-
-export interface AudioSource {
-  id: string;
-  name: string;
-  thumbnail: string;
-}

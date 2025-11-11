@@ -1,34 +1,8 @@
-import { useEffect, useRef } from 'react';
-import { useAppStore } from '../store/appStore';
 import RecordingControls from '../components/RecordingControls';
 import MeetingsList from '../components/MeetingsList';
 import Header from '../components/Header';
 
 function Home() {
-  const { isRecording, recordingDuration, setRecordingDuration } = useAppStore();
-  const intervalRef = useRef<NodeJS.Timeout | null>(null);
-
-  useEffect(() => {
-    if (isRecording) {
-      // Start timer
-      intervalRef.current = setInterval(() => {
-        setRecordingDuration(recordingDuration + 1);
-      }, 1000);
-    } else {
-      // Stop timer
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-        intervalRef.current = null;
-      }
-    }
-
-    return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-      }
-    };
-  }, [isRecording, recordingDuration, setRecordingDuration]);
-
   return (
     <div className="flex flex-col h-full">
       <Header />

@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, desktopCapturer, systemPreferences } from 'electron';
+import { app, BrowserWindow, ipcMain } from 'electron';
 import path from 'path';
 import { DatabaseService } from './services/database.service';
 import { AudioService } from './services/audio.service';
@@ -49,7 +49,7 @@ app.whenReady().then(() => {
   const appPath = app.getAppPath();
   dbService = new DatabaseService(userDataPath);
   configService = new ConfigService(userDataPath);
-  audioService = new AudioService(userDataPath);
+  audioService = new AudioService();
   systemAudioService = new SystemAudioService(userDataPath, appPath);
   transcriptionService = new TranscriptionService(configService);
   summaryService = new SummaryService(configService);
@@ -101,21 +101,6 @@ ipcMain.handle('request-screen-permission', async () => {
   }
 });
 
-// Get audio sources for recording
-ipcMain.handle('get-audio-sources', async () => {
-  try {
-    const sources = await desktopCapturer.getSources({
-      types: ['window', 'screen'],
-      thumbnailSize: { width: 150, height: 150 },
-    });
-    return sources;
-  } catch (error) {
-    console.error('Error getting audio sources:', error);
-    // If there's a permission error, macOS will show its own dialog
-    throw error;
-  }
-});
-
 // Start system audio recording (using Swift recorder)
 ipcMain.handle('start-recording', async () => {
   try {
@@ -138,20 +123,6 @@ ipcMain.handle('stop-recording', async () => {
     return result;
   } catch (error) {
     console.error('Error stopping recording:', error);
-    return { success: false, error: (error as Error).message };
-  }
-});
-
-// Save audio blob to file
-ipcMain.handle('save-audio-file', async (_event, audioData: ArrayBuffer) => {
-  try {
-    const buffer = Buffer.from(audioData);
-    const timestamp = Date.now();
-    const fileName = `recording_${timestamp}.webm`;
-    const filePath = await audioService.saveAudioFile(buffer, fileName);
-    return { success: true, filePath };
-  } catch (error) {
-    console.error('Error saving audio file:', error);
     return { success: false, error: (error as Error).message };
   }
 });

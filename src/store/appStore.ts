@@ -5,7 +5,6 @@ interface AppState {
   // Recording state
   isRecording: boolean;
   recordingDuration: number;
-  currentMeeting: Meeting | null;
 
   // Meetings list
   meetings: Meeting[];
@@ -20,7 +19,6 @@ interface AppState {
   // Actions
   setRecording: (isRecording: boolean) => void;
   setRecordingDuration: (duration: number) => void;
-  setCurrentMeeting: (meeting: Meeting | null) => void;
   setMeetings: (meetings: Meeting[]) => void;
   addMeeting: (meeting: Meeting) => void;
   updateMeeting: (id: string, updates: Partial<Meeting>) => void;
@@ -34,7 +32,6 @@ export const useAppStore = create<AppState>((set) => ({
   // Initial state
   isRecording: false,
   recordingDuration: 0,
-  currentMeeting: null,
   meetings: [],
   config: null,
   currentView: 'home',
@@ -43,7 +40,6 @@ export const useAppStore = create<AppState>((set) => ({
   // Actions
   setRecording: (isRecording) => set({ isRecording }),
   setRecordingDuration: (duration) => set({ recordingDuration: duration }),
-  setCurrentMeeting: (meeting) => set({ currentMeeting: meeting }),
 
   setMeetings: (meetings) => set({ meetings }),
 
