@@ -2,6 +2,9 @@ import { useState, useEffect } from 'react';
 import { useAppStore } from '../store/appStore';
 import { Meeting } from '../types';
 import ReactMarkdown from 'react-markdown';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 function MeetingDetail() {
   const { selectedMeetingId, setCurrentView, updateMeeting } = useAppStore();
@@ -217,124 +220,132 @@ function MeetingDetail() {
   return (
     <div className="flex flex-col h-full overflow-auto">
       {/* Header */}
-      <div className="px-8 py-6">
-        <button
-          onClick={() => setCurrentView('home')}
-          className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-6"
-        >
-          <svg
-            className="w-5 h-5"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
+      <div className="px-8 pt-8 pb-6">
+        <div className="max-w-5xl mx-auto">
+          <Button
+            onClick={() => setCurrentView('home')}
+            variant="ghost"
+            className="mb-6 px-2"
           >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M15 19l-7-7 7-7"
-            />
-          </svg>
-          <span>Back</span>
-        </button>
-
-        <div>
-          {isEditingTitle ? (
-            <div className="flex items-center gap-2">
-              <input
-                type="text"
-                value={editedTitle}
-                onChange={(e) => setEditedTitle(e.target.value)}
-                className="border border-gray-300 rounded px-3 py-1 text-2xl font-medium"
-                autoFocus
-              />
-              <button
-                onClick={handleTitleSave}
-                className="bg-gray-900 text-white px-4 py-2 rounded hover:bg-gray-800"
-              >
-                Save
-              </button>
-              <button
-                onClick={() => {
-                  setIsEditingTitle(false);
-                  setEditedTitle(meeting.title);
-                }}
-                className="bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-50"
-              >
-                Cancel
-              </button>
-            </div>
-          ) : (
-            <h1
-              onClick={() => setIsEditingTitle(true)}
-              className="text-2xl font-medium text-gray-900 cursor-pointer hover:text-gray-700 mb-2"
+            <svg
+              className="w-5 h-5 mr-2"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
             >
-              {meeting.title}
-            </h1>
-          )}
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M15 19l-7-7 7-7"
+              />
+            </svg>
+            <span>Back</span>
+          </Button>
 
-          <div className="flex items-center gap-2 text-sm text-gray-500">
-            <span>{new Date(meeting.date).toLocaleString('en-US', {
-              year: 'numeric',
-              month: 'long',
-              day: 'numeric',
-              hour: 'numeric',
-              minute: '2-digit',
-              hour12: true
-            })}</span>
-            <span>•</span>
-            <span>{formatDuration(meeting.duration).replace(/h |m |s/g, (match) => match.trim())}</span>
+          <div>
+            {isEditingTitle ? (
+              <div className="flex items-center gap-2">
+                <Input
+                  type="text"
+                  value={editedTitle}
+                  onChange={(e) => setEditedTitle(e.target.value)}
+                  className="text-2xl font-medium"
+                  autoFocus
+                />
+                <Button onClick={handleTitleSave}>
+                  Save
+                </Button>
+                <Button
+                  onClick={() => {
+                    setIsEditingTitle(false);
+                    setEditedTitle(meeting.title);
+                  }}
+                  variant="outline"
+                >
+                  Cancel
+                </Button>
+              </div>
+            ) : (
+              <h1
+                onClick={() => setIsEditingTitle(true)}
+                className="text-2xl font-medium text-foreground cursor-pointer hover:text-muted-foreground mb-2"
+              >
+                {meeting.title}
+              </h1>
+            )}
+
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <span>{new Date(meeting.date).toLocaleString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: 'numeric',
+                minute: '2-digit',
+                hour12: true
+              })}</span>
+              <span>•</span>
+              <span>{formatDuration(meeting.duration).replace(/h |m |s/g, (match) => match.trim())}</span>
+            </div>
           </div>
-        </div>
 
-        {/* Action Buttons */}
-        <div className="flex items-center gap-3 mt-6">
+          {/* Action Buttons */}
+          <div className="flex items-center gap-3 mt-6">
           {!meeting.transcript && !isTranscribing && (
-            <button
+            <Button
               onClick={handleTranscribe}
-              className="bg-gray-900 text-white px-4 py-2 rounded-full hover:bg-gray-800 text-sm font-medium"
+              className="rounded-full"
+              size="sm"
             >
               Transcribe Audio
-            </button>
+            </Button>
           )}
           {isTranscribing && (
-            <span className="text-sm text-gray-600">Transcribing...</span>
+            <span className="text-sm text-muted-foreground">Transcribing...</span>
           )}
           {meeting.transcript && !meeting.summary && !isSummarizing && (
-            <button
+            <Button
               onClick={handleSummarize}
-              className="bg-gray-900 text-white px-4 py-2 rounded-full hover:bg-gray-800 text-sm font-medium"
+              className="rounded-full"
+              size="sm"
             >
               Generate Summary
-            </button>
+            </Button>
           )}
           {meeting.summary && !isSummarizing && (
-            <button
+            <Button
               onClick={handleSummarize}
-              className="bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-full hover:bg-gray-50 text-sm font-medium"
+              variant="outline"
+              className="rounded-full"
+              size="sm"
             >
               Regenerate Summary
-            </button>
+            </Button>
           )}
           {isSummarizing && (
-            <span className="text-sm text-gray-600">Generating summary...</span>
+            <span className="text-sm text-muted-foreground">Generating summary...</span>
           )}
           {(meeting.transcript || meeting.summary) && (
             <>
-              <button
+              <Button
                 onClick={() => handleExport('md')}
-                className="bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-full hover:bg-gray-50 text-sm font-medium"
+                variant="outline"
+                className="rounded-full"
+                size="sm"
               >
                 Export MD
-              </button>
-              <button
+              </Button>
+              <Button
                 onClick={() => handleExport('txt')}
-                className="bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-full hover:bg-gray-50 text-sm font-medium"
+                variant="outline"
+                className="rounded-full"
+                size="sm"
               >
                 Export TXT
-              </button>
+              </Button>
             </>
           )}
+          </div>
         </div>
       </div>
 
@@ -343,60 +354,43 @@ function MeetingDetail() {
         <div className="max-w-5xl mx-auto">
           {/* Tabs */}
           {(meeting.transcript || meeting.summary) && (
-            <div className="flex gap-2 mb-6">
-              <button
-                onClick={() => setActiveTab('summary')}
-                className={`px-6 py-2.5 rounded-full font-medium transition-colors ${
-                  activeTab === 'summary'
-                    ? 'bg-gray-900 text-white'
-                    : 'bg-white text-gray-600 hover:bg-gray-100'
-                }`}
-              >
-                Summary
-              </button>
-              <button
-                onClick={() => setActiveTab('transcript')}
-                className={`px-6 py-2.5 rounded-full font-medium transition-colors ${
-                  activeTab === 'transcript'
-                    ? 'bg-gray-900 text-white'
-                    : 'bg-white text-gray-600 hover:bg-gray-100'
-                }`}
-              >
-                Transcript
-              </button>
-            </div>
+            <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'summary' | 'transcript')}>
+              <TabsList className="mb-6">
+                <TabsTrigger value="summary" className="px-6 rounded-full">
+                  Summary
+                </TabsTrigger>
+                <TabsTrigger value="transcript" className="px-6 rounded-full">
+                  Transcript
+                </TabsTrigger>
+              </TabsList>
+
+              <div className="bg-card rounded-lg p-8 border">
+                <TabsContent value="summary">
+                  {meeting.summary ? (
+                    <div className="prose prose-slate max-w-none">
+                      <ReactMarkdown>{meeting.summary}</ReactMarkdown>
+                    </div>
+                  ) : (
+                    <div className="text-center py-12 text-muted-foreground">
+                      <p>No summary yet. Generate one from the transcript.</p>
+                    </div>
+                  )}
+                </TabsContent>
+
+                <TabsContent value="transcript">
+                  {meeting.transcript ? (
+                    <div className="prose max-w-none">
+                      <p className="whitespace-pre-wrap">{meeting.transcript}</p>
+                    </div>
+                  ) : (
+                    <div className="text-center py-12 text-muted-foreground">
+                      <p>No transcript yet. Transcribe the audio to get started.</p>
+                    </div>
+                  )}
+                </TabsContent>
+              </div>
+            </Tabs>
           )}
-
-          {/* Content Area */}
-          <div className="bg-white rounded-lg p-8">
-            {activeTab === 'summary' && (
-              <div>
-                {meeting.summary ? (
-                  <div className="prose prose-slate max-w-none">
-                    <ReactMarkdown>{meeting.summary}</ReactMarkdown>
-                  </div>
-                ) : (
-                  <div className="text-center py-12 text-gray-500">
-                    <p>No summary yet. Generate one from the transcript.</p>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {activeTab === 'transcript' && (
-              <div>
-                {meeting.transcript ? (
-                  <div className="prose max-w-none">
-                    <p className="whitespace-pre-wrap">{meeting.transcript}</p>
-                  </div>
-                ) : (
-                  <div className="text-center py-12 text-gray-500">
-                    <p>No transcript yet. Transcribe the audio to get started.</p>
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
         </div>
       </main>
     </div>

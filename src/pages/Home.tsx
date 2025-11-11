@@ -23,7 +23,7 @@ function Home() {
     <div className="flex flex-col h-full overflow-auto">
       <main className="flex-1 px-4 sm:px-8 md:px-16 py-8">
         {/* Title */}
-        <h1 className="text-2xl font-medium text-gray-900 mb-12 text-center w-full">AI Notetaker</h1>
+        <h1 className="text-2xl font-medium text-foreground mb-12 text-center w-full">AI Notetaker</h1>
 
         {/* Recording Section */}
         <div className="max-w-3xl mx-auto">
@@ -32,7 +32,7 @@ function Home() {
           {/* Recent Meetings or Empty State */}
           <div className="mt-16">
             {meetings.length === 0 ? (
-              <p className="text-center text-gray-500">
+              <p className="text-center text-muted-foreground">
                 No meetings yet. Start recording to create your first meeting.
               </p>
             ) : (

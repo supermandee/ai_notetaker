@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { useAppStore } from '../store/appStore';
+import { Button } from './ui/button';
 
 function RecordingControls() {
   const {
@@ -123,7 +124,7 @@ function RecordingControls() {
       {/* Circular Microphone Icon */}
       <div className="mb-6">
         <div className={`w-32 h-32 rounded-full flex items-center justify-center transition-colors ${
-          isRecording ? 'bg-red-500' : 'bg-gray-900'
+          isRecording ? 'bg-red-500' : 'bg-primary'
         }`}>
           <svg
             className="w-16 h-16 text-white"
@@ -145,31 +146,34 @@ function RecordingControls() {
       <div className="mb-8 text-center">
         {isRecording ? (
           <div>
-            <div className="text-xl text-gray-600 mb-2">Recording</div>
-            <div className="text-3xl font-light text-gray-900 tabular-nums">
+            <div className="text-xl text-muted-foreground mb-2">Recording</div>
+            <div className="text-3xl font-light text-foreground tabular-nums">
               {formatTime(recordingDuration)}
             </div>
           </div>
         ) : (
-          <div className="text-xl text-gray-600">Ready to record</div>
+          <div className="text-xl text-muted-foreground">Ready to record</div>
         )}
       </div>
 
       {/* Recording Button */}
       {!isRecording ? (
-        <button
+        <Button
           onClick={startRecording}
-          className="bg-gray-900 text-white px-10 py-3 rounded-full hover:bg-gray-800 transition-colors text-base font-medium"
+          size="lg"
+          className="px-10 rounded-full"
         >
           Start Recording
-        </button>
+        </Button>
       ) : (
-        <button
+        <Button
           onClick={stopRecording}
-          className="bg-white text-gray-900 border-2 border-gray-900 px-10 py-3 rounded-full hover:bg-gray-50 transition-colors text-base font-medium"
+          variant="outline"
+          size="lg"
+          className="px-10 rounded-full border-2"
         >
           Stop Recording
-        </button>
+        </Button>
       )}
     </div>
   );
