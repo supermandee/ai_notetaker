@@ -121,8 +121,17 @@ function MeetingDetail() {
       const result = await window.electronAPI.generateSummary(transcript);
 
       if (result.success && result.summary) {
-        // Use title from summary response if available, otherwise keep default
-        const meetingTitle = result.title || meeting.title;
+        // Always generate title separately from the summary content
+        console.log('Generating meeting title from summary...');
+        let meetingTitle = meeting.title; // Default fallback
+
+        const titleResult = await window.electronAPI.generateMeetingTitle(result.summary);
+        if (titleResult.success && titleResult.title) {
+          meetingTitle = titleResult.title;
+          console.log(`✓ Generated title: "${meetingTitle}"`);
+        } else {
+          console.log('⚠ Title generation failed, keeping default title');
+        }
 
         const updatedMeeting = {
           ...meeting,

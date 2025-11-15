@@ -45,20 +45,18 @@ export class SummaryService {
     // Use Responses API for all models
     const systemPrompt = `You are an expert meeting analyst and professional summarizer. Your task is to create a clear, concise summary that captures all important information from the meeting.
 
-FIRST: Generate a concise, descriptive meeting title (3-7 words) based on the main topic discussed. Output this on the very first line as: TITLE: [Your Generated Title]
-
-THEN: Use this EXACT template structure and fill in the content. Keep all headings, sections, and formatting exactly as shown:
+Use this EXACT template structure and fill in the content. Keep all headings, sections, and formatting exactly as shown:
 
 ${template}
 
 Fill in each section with the relevant information from the meeting. Be concise but comprehensive - include all key discussions, decisions, action items, concerns raised, and important context. Write clearly so anyone who missed the meeting can understand what was discussed and decided.
 
 IMPORTANT:
-- The first line MUST be the title in format: TITLE: [Your Generated Title]
 - Keep all markdown headings (##, ###) exactly as they appear in the template
 - Use **bold** for emphasis on key points and important terms within sections
 - Fill in bullet points with actual content from the meeting
-- Preserve all section dividers (---) from the template`;
+- Preserve all section dividers (---) from the template
+- Do NOT change the template structure in any way`;
 
     const userPrompt = `Please summarize this meeting transcript:\n\n${transcript}`;
 
@@ -127,19 +125,9 @@ IMPORTANT:
         throw new Error('Model returned empty summary. Check console for details.');
       }
 
-      // Extract title from the first line if present
-      let title: string | undefined;
-      let summary = content;
-
-      const titleMatch = content.match(/^TITLE:\s*(.+)$/m);
-      if (titleMatch) {
-        title = titleMatch[1].trim();
-        // Remove the title line from the summary
-        summary = content.replace(/^TITLE:\s*.+\n?/m, '').trim();
-        console.log(`Extracted title: ${title}`);
-      }
-
-      return { summary, title };
+      // Summary should follow the user's template exactly
+      // Title will be generated separately by the frontend
+      return { summary: content.trim(), title: undefined };
     } catch (error: any) {
       console.error('OpenAI Responses API error:', error);
       console.error('Error details:', {
@@ -190,24 +178,32 @@ IMPORTANT:
     try {
       const requestParams: any = {
         model: model,
-        input: `Analyze this meeting summary and provide a concise meeting title (3-7 words maximum).
+        input: `Generate a concise meeting title (3-7 words maximum) based on the main topic discussed in this meeting summary.
 
-INSTRUCTIONS:
-- If the summary contains a clear "Meeting Title" or "Topic" heading, extract and return that exact title
-- If no clear title exists in the summary, generate a descriptive title based on the main discussion topic
-- Return ONLY the title text, nothing else (no quotes, no extra formatting)
+CRITICAL REQUIREMENTS:
+- Return ONLY plain text with NO formatting whatsoever
+- NO markdown (no asterisks, underscores, hashtags, brackets, backticks, tildes, etc.)
+- NO quotes around the title
+- NO extra punctuation or symbols
+- Just the plain title text
+
+Example good titles:
+- Weekly Team Sync
+- Q4 Product Roadmap Review
+- Customer Feedback Analysis
+- Engineering Sprint Planning
 
 Summary:
 ${summary}`,
         text: {
-          verbosity: 'low'
+          verbosity: 'medium' // gpt-4o-mini only supports 'medium'
         },
-        max_output_tokens: 100,
+        max_output_tokens: isReasoningModel ? 1000 : 100, // Reasoning models need more tokens
       };
 
       if (isReasoningModel) {
         requestParams.reasoning = {
-          effort: 'low'
+          effort: 'low' // Minimize reasoning tokens to leave room for output
         };
       } else {
         requestParams.temperature = 0.7;
@@ -248,13 +244,22 @@ ${summary}`,
         throw new Error('Model returned empty title. Check console for details.');
       }
 
-      // Clean up the title: remove quotes, asterisks, and other markdown formatting
+      // Clean up the title: remove any markdown formatting and extra characters
       let cleanTitle = content.trim()
-        .replace(/^["']|["']$/g, '') // Remove leading/trailing quotes
-        .replace(/[*_#\[\]]/g, '') // Remove markdown formatting
+        .replace(/^["'`]|["'`]$/g, '') // Remove leading/trailing quotes and backticks
+        .replace(/\*\*/g, '') // Remove bold (**text**)
+        .replace(/\*/g, '') // Remove italic (*text*)
+        .replace(/__/g, '') // Remove bold (__text__)
+        .replace(/_/g, '') // Remove italic (_text_)
+        .replace(/~~~/g, '') // Remove strikethrough
+        .replace(/~~(.+?)~~/g, '$1') // Remove strikethrough (~~text~~)
+        .replace(/`/g, '') // Remove code backticks
+        .replace(/#{1,6}\s*/g, '') // Remove heading markers
+        .replace(/\[|\]/g, '') // Remove brackets
         .replace(/^[:\-\s]+|[:\-\s]+$/g, '') // Remove leading/trailing colons, dashes, spaces
         .trim();
 
+      console.log(`Generated and cleaned title: "${cleanTitle}"`);
       return cleanTitle;
     } catch (error: any) {
       console.error('OpenAI Responses API error:', error);
